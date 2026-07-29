@@ -102,7 +102,7 @@
       if (team === 1) state.score1++;
       if (team === 2) state.score2++;
       sendUpdate();
-      channel.postMessage({ type: 'GOAL_EVENT' });
+      channel.postMessage({ type: 'GOAL_EVENT', team: team });
     }
 
     document.getElementById('team1Input').addEventListener('input', (e) => {
