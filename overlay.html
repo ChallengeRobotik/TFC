@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>OBS Overlay</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Teko:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -14,7 +14,7 @@
     body {
       background: transparent;
       overflow: hidden;
-      font-family: 'Orbitron', sans-serif;
+      font-family: 'Montserrat', sans-serif;
       user-select: none;
       width: 100vw;
       height: 100vh;
@@ -30,44 +30,52 @@
       gap: 12px;
     }
 
-    /* LOGO CENTRAL : Fond transparent et animation au chargement */
-    .center-logo {
-      width: 48px;
-      height: 48px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-      transform: scale(0);
-      animation: popLogo 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-
-    .center-logo img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      background: transparent;
-    }
-
-    @keyframes popLogo {
-      0% { transform: scale(0) rotate(-10deg); }
-      100% { transform: scale(1) rotate(0deg); }
-    }
-
-    /* TIMER : Déploiement vers la gauche */
+    /* CHRONO : Largeur fixe pour éviter tout décalage du reste de l'affichage */
     .timer-wrapper {
       display: flex;
       align-items: center;
+      justify-content: center;
       background: #ffffff;
       border-radius: 18px;
-      padding: 6px 18px;
-      gap: 8px;
+      padding: 6px 14px;
+      gap: 6px;
+      min-width: 150px; /* Fixe la largeur pour stabiliser la barre de score */
       transform: scaleX(0);
       transform-origin: right center;
       animation: deployLeft 0.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* BARRE PRINCIPALE : Déploiement vers la droite */
+    .timer-box {
+      color: #000000;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-align: center;
+      font-variant-numeric: tabular-nums; /* Alignement fixe des chiffres */
+    }
+
+    /* TEMPS ADDITIONNEL */
+    .extra-time {
+      background: #ff2a2a;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 6px;
+      display: none;
+      animation: pulseExtra 1.2s infinite ease-in-out;
+    }
+
+    .extra-time.visible {
+      display: inline-block;
+    }
+
+    @keyframes pulseExtra {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.05); }
+    }
+
+    /* BARRE PRINCIPALE */
     .main-bar {
       display: flex;
       align-items: center;
@@ -89,49 +97,21 @@
       to { transform: scaleX(1); }
     }
 
-    .timer-box {
-      color: #000000;
-      font-size: 30px;
-      font-weight: 900;
-      letter-spacing: 1px;
-    }
-
-    /* TEMPS ADDITIONNEL */
-    .extra-time {
-      background: #ff2a2a;
-      color: #ffffff;
-      font-size: 18px;
-      font-weight: 900;
-      padding: 2px 8px;
-      border-radius: 8px;
-      display: none;
-      animation: pulseExtra 1.2s infinite ease-in-out;
-    }
-
-    .extra-time.visible {
-      display: inline-block;
-    }
-
-    @keyframes pulseExtra {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.85; transform: scale(1.05); }
-    }
-
     .team {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 0 12px;
       color: #ffffff;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
 
     .team-color-circle {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       background-color: #ff0000;
       transition: background-color 0.3s ease;
@@ -148,13 +128,13 @@
     }
 
     .score {
-      font-family: 'Teko', sans-serif;
-      font-size: 46px;
-      font-weight: 700;
+      font-size: 32px;
+      font-weight: 900;
       padding: 0 14px;
       line-height: 1;
       display: inline-block;
       transition: transform 0.2s ease;
+      font-variant-numeric: tabular-nums;
     }
 
     .score-updated {
@@ -163,17 +143,41 @@
 
     @keyframes popScore {
       0% { transform: scale(1); }
-      50% { transform: scale(1.5); }
+      50% { transform: scale(1.4); }
       100% { transform: scale(1); }
     }
 
-    /* BANNIÈRE ROUGE DU BUT (Bandeau glissant) */
+    /* LOGO CENTRAL */
+    .center-logo {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      transform: scale(0);
+      animation: popLogo 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .center-logo img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      background: transparent;
+    }
+
+    @keyframes popLogo {
+      0% { transform: scale(0) rotate(-10deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    /* BANNIÈRE ROUGE DU BUT : Couleur dynamique via JS */
     .goal-banner {
       position: absolute;
       inset: 0;
       background: #ff0000;
       color: #ffffff;
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 900;
       letter-spacing: 6px;
       display: flex;
@@ -242,6 +246,11 @@
     const channel = new BroadcastChannel('obs_scoreboard_channel');
     let goalTimeout = null;
 
+    let currentColors = {
+      1: '#0055ff',
+      2: '#ff0000'
+    };
+
     function updateScoreWithAnimation(element, newValue) {
       if (element.innerText !== String(newValue)) {
         element.innerText = newValue;
@@ -262,6 +271,9 @@
         updateScoreWithAnimation(document.getElementById('scoreTeam1'), data.score1);
         updateScoreWithAnimation(document.getElementById('scoreTeam2'), data.score2);
 
+        currentColors[1] = data.color1;
+        currentColors[2] = data.color2;
+
         document.getElementById('circleTeam1').style.backgroundColor = data.color1;
         document.getElementById('circleTeam2').style.backgroundColor = data.color2;
 
@@ -279,6 +291,11 @@
 
       if (data.type === 'GOAL_EVENT') {
         const bar = document.getElementById('mainBar');
+        const goalBanner = document.getElementById('goalBanner');
+
+        // La bannière prend la couleur de l'équipe concernée
+        const teamColor = currentColors[data.team] || '#ff0000';
+        goalBanner.style.backgroundColor = teamColor;
 
         bar.classList.remove('goal-out');
         bar.classList.add('goal-in');
