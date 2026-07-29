@@ -2,301 +2,159 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>OBS Overlay</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Teko:wght@700&display=swap" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background: transparent;
-      overflow: hidden;
-      font-family: 'Orbitron', sans-serif;
-      user-select: none;
-      width: 100vw;
-      height: 100vh;
-    }
-
-    /* Conteneur principal */
-    .scoreboard-container {
-      position: absolute;
-      top: 40px;
-      left: 50px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* LOGO CENTRAL : Apparition en zoom progressif */
-    .center-logo {
-      width: 48px;
-      height: 48px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-      transform: scale(0);
-      animation: popLogo 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-
-    .center-logo img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-
-    @keyframes popLogo {
-      0% { transform: scale(0) rotate(-10deg); }
-      100% { transform: scale(1) rotate(0deg); }
-    }
-
-    /* TIMER : Déploiement vers la gauche */
-    .timer-wrapper {
-      display: flex;
-      align-items: center;
-      background: #ffffff;
-      border-radius: 18px;
-      padding: 6px 18px;
-      gap: 8px;
-      transform: scaleX(0);
-      transform-origin: right center;
-      animation: deployLeft 0.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    /* BARRE PRINCIPALE : Déploiement vers la droite */
-    .main-bar {
-      display: flex;
-      align-items: center;
-      background: #000000;
-      border-radius: 20px;
-      padding: 4px 12px;
-      position: relative;
-      overflow: hidden;
-      transform: scaleX(0);
-      transform-origin: left center;
-      animation: deployRight 0.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    @keyframes deployLeft {
-      to { transform: scaleX(1); }
-    }
-
-    @keyframes deployRight {
-      to { transform: scaleX(1); }
-    }
-
-    .timer-box {
-      color: #000000;
-      font-size: 30px;
-      font-weight: 900;
-      letter-spacing: 1px;
-    }
-
-    /* TEMPS ADDITIONNEL : Animation de pulsation fondu */
-    .extra-time {
-      background: #ff2a2a;
-      color: #ffffff;
-      font-size: 18px;
-      font-weight: 900;
-      padding: 2px 8px;
-      border-radius: 8px;
-      display: none;
-      animation: pulseExtra 1.2s infinite ease-in-out;
-    }
-
-    .extra-time.visible {
-      display: inline-block;
-    }
-
-    @keyframes pulseExtra {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.85; transform: scale(1.05); }
-    }
-
-    .team {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 12px;
-      color: #ffffff;
-      font-size: 20px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .team-color-circle {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background-color: #ff0000;
-      transition: background-color 0.3s ease;
-    }
-
-    .center-score-zone {
-      display: flex;
-      align-items: center;
-      background: #00f2fe;
-      border-radius: 16px;
-      padding: 0 6px;
-      margin: 0 6px;
-      color: #000;
-    }
-
-    .score {
-      font-family: 'Teko', sans-serif;
-      font-size: 46px;
-      font-weight: 700;
-      padding: 0 14px;
-      line-height: 1;
-      display: inline-block;
-      transition: transform 0.2s ease;
-    }
-
-    /* ANIMATION DU SCORE QUAND IL CHANGE */
-    .score-updated {
-      animation: popScore 0.4s ease;
-    }
-
-    @keyframes popScore {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.5); }
-      100% { transform: scale(1); }
-    }
-
-    /* BANNIÈRE ROUGE DU BUT : Glissement depuis la gauche puis sortie à droite */
-    .goal-banner {
-      position: absolute;
-      inset: 0;
-      background: #ff0000;
-      color: #ffffff;
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 6px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 20px;
-      text-transform: uppercase;
-      transform: translateX(-100%);
-      pointer-events: none;
-      z-index: 20;
-    }
-
-    /* Entrée de la bannière */
-    .main-bar.goal-in .goal-banner {
-      animation: slideInGoal 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    }
-
-    /* Sortie de la bannière */
-    .main-bar.goal-out .goal-banner {
-      animation: slideOutGoal 0.5s cubic-bezier(0.5, 0, 0.75, 0) forwards;
-    }
-
-    @keyframes slideInGoal {
-      from { transform: translateX(-100%); }
-      to { transform: translateX(0%); }
-    }
-
-    @keyframes slideOutGoal {
-      from { transform: translateX(0%); }
-      to { transform: translateX(100%); }
-    }
-  </style>
+  <title>Régie Scoreboard</title>
 </head>
 <body>
 
-  <div class="scoreboard-container" id="scoreboard">
-    <div class="timer-wrapper">
-      <div class="timer-box" id="timerDisplay">00:00</div>
-      <div class="extra-time" id="extraTimeDisplay">+0'</div>
-    </div>
+  <h1>Panneau de Contrôle OBS</h1>
 
-    <div class="main-bar" id="mainBar">
-      <div class="team">
-        <div class="team-color-circle" id="circleTeam1"></div>
-        <span id="nameTeam1">TEAM 1</span>
-      </div>
+  <div>
+    <button id="toggleVisibilityBtn">Afficher / Masquer l'afficheur</button>
+  </div>
 
-      <div class="center-score-zone">
-        <div class="score" id="scoreTeam1">0</div>
-        
-        <div class="center-logo">
-          <img src="https://image.noelshack.com/minis/2026/31/3/1785359559-1000007827-removebg-preview.png" alt="Logo">
-        </div>
+  <hr>
 
-        <div class="score" id="scoreTeam2">0</div>
-      </div>
+  <h2>Équipes</h2>
+  <div>
+    <label>Couleur T1:</label>
+    <input type="color" id="color1Input" value="#0055ff">
+    <label>Nom T1:</label>
+    <input type="text" id="team1Input" value="TEAM 1">
+  </div>
+  <br>
+  <div>
+    <label>Couleur T2:</label>
+    <input type="color" id="color2Input" value="#ff0000">
+    <label>Nom T2:</label>
+    <input type="text" id="team2Input" value="TEAM 2">
+  </div>
 
-      <div class="team">
-        <span id="nameTeam2">TEAM 2</span>
-        <div class="team-color-circle" id="circleTeam2"></div>
-      </div>
+  <hr>
 
-      <div class="goal-banner" id="goalBanner">BUUUUUUT</div>
-    </div>
+  <h2>Score & Animation</h2>
+  <div>
+    <p>Équipe 1</p>
+    <button onclick="changeScore(1, -1)">-1</button>
+    <button onclick="changeScore(1, 1)">+1</button>
+    <button onclick="triggerGoal(1)">Lancer animation BUT (T1)</button>
+  </div>
+  <br>
+  <div>
+    <p>Équipe 2</p>
+    <button onclick="changeScore(2, -1)">-1</button>
+    <button onclick="changeScore(2, 1)">+1</button>
+    <button onclick="triggerGoal(2)">Lancer animation BUT (T2)</button>
+  </div>
+
+  <hr>
+
+  <h2>Chronomètre</h2>
+  <h3 id="adminTimer">00:00</h3>
+  <div>
+    <label>Temps additionnel (min) :</label>
+    <input type="number" id="extraTimeInput" value="0" min="0" max="15">
+  </div>
+  <br>
+  <div>
+    <button onclick="startTimer()">Démarrer</button>
+    <button onclick="pauseTimer()">Pause</button>
+    <button onclick="resetTimer()">Reset</button>
   </div>
 
   <script>
     const channel = new BroadcastChannel('obs_scoreboard_channel');
-    let goalTimeout = null;
 
-    function updateScoreWithAnimation(element, newValue) {
-      if (element.innerText !== String(newValue)) {
-        element.innerText = newValue;
-        element.classList.remove('score-updated');
-        void element.offsetWidth;
-        element.classList.add('score-updated');
-      }
+    let state = {
+      visible: true,
+      team1Name: 'TEAM 1',
+      team2Name: 'TEAM 2',
+      color1: '#0055ff',
+      color2: '#ff0000',
+      score1: 0,
+      score2: 0,
+      timerSeconds: 0,
+      extraTime: '0'
+    };
+
+    let timerInterval = null;
+
+    function sendUpdate() {
+      const minutes = String(Math.floor(state.timerSeconds / 60)).padStart(2, '0');
+      const seconds = String(state.timerSeconds % 60).padStart(2, '0');
+      const timeStr = `${minutes}:${seconds}`;
+
+      document.getElementById('adminTimer').innerText = timeStr;
+
+      channel.postMessage({
+        type: 'UPDATE',
+        ...state,
+        timer: timeStr
+      });
     }
 
-    channel.onmessage = (event) => {
-      const data = event.data;
+    function changeScore(team, delta) {
+      if (team === 1) state.score1 = Math.max(0, state.score1 + delta);
+      if (team === 2) state.score2 = Math.max(0, state.score2 + delta);
+      sendUpdate();
+    }
 
-      if (data.type === 'UPDATE') {
-        document.getElementById('timerDisplay').innerText = data.timer;
-        document.getElementById('nameTeam1').innerText = data.team1Name;
-        document.getElementById('nameTeam2').innerText = data.team2Name;
-        
-        updateScoreWithAnimation(document.getElementById('scoreTeam1'), data.score1);
-        updateScoreWithAnimation(document.getElementById('scoreTeam2'), data.score2);
+    function triggerGoal(team) {
+      if (team === 1) state.score1++;
+      if (team === 2) state.score2++;
+      sendUpdate();
+      channel.postMessage({ type: 'GOAL_EVENT' });
+    }
 
-        document.getElementById('circleTeam1').style.backgroundColor = data.color1;
-        document.getElementById('circleTeam2').style.backgroundColor = data.color2;
+    document.getElementById('team1Input').addEventListener('input', (e) => {
+      state.team1Name = e.target.value;
+      sendUpdate();
+    });
 
-        const extraEl = document.getElementById('extraTimeDisplay');
-        if (data.extraTime && data.extraTime !== '0' && data.extraTime !== '') {
-          extraEl.innerText = `+${data.extraTime}'`;
-          extraEl.classList.add('visible');
-        } else {
-          extraEl.classList.remove('visible');
-        }
+    document.getElementById('team2Input').addEventListener('input', (e) => {
+      state.team2Name = e.target.value;
+      sendUpdate();
+    });
 
-        const board = document.getElementById('scoreboard');
-        board.style.display = data.visible ? 'flex' : 'none';
-      }
+    document.getElementById('color1Input').addEventListener('input', (e) => {
+      state.color1 = e.target.value;
+      sendUpdate();
+    });
 
-      if (data.type === 'GOAL_EVENT') {
-        const bar = document.getElementById('mainBar');
+    document.getElementById('color2Input').addEventListener('input', (e) => {
+      state.color2 = e.target.value;
+      sendUpdate();
+    });
 
-        bar.classList.remove('goal-out');
-        bar.classList.add('goal-in');
+    document.getElementById('extraTimeInput').addEventListener('input', (e) => {
+      state.extraTime = e.target.value;
+      sendUpdate();
+    });
 
-        if (goalTimeout) clearTimeout(goalTimeout);
+    function startTimer() {
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        state.timerSeconds++;
+        sendUpdate();
+      }, 1000);
+    }
 
-        goalTimeout = setTimeout(() => {
-          bar.classList.remove('goal-in');
-          bar.classList.add('goal-out');
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
 
-          setTimeout(() => {
-            bar.classList.remove('goal-out');
-          }, 500);
-        }, 3500);
-      }
-    };
+    function resetTimer() {
+      pauseTimer();
+      state.timerSeconds = 0;
+      sendUpdate();
+    }
+
+    document.getElementById('toggleVisibilityBtn').addEventListener('click', () => {
+      state.visible = !state.visible;
+      sendUpdate();
+    });
+
+    sendUpdate();
   </script>
 </body>
 </html>
