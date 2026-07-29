@@ -2,24 +2,24 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Panneau de Régie - OBS Scoreboard</title>
+  <title>Régie Scoreboard</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #121214;
+      background: #111115;
       color: #ffffff;
-      padding: 30px;
+      padding: 20px;
       display: flex;
       justify-content: center;
     }
 
     .panel {
-      background: #1e1e24;
-      padding: 25px;
-      border-radius: 12px;
+      background: #1c1c22;
+      padding: 24px;
+      border-radius: 14px;
       width: 100%;
-      max-width: 600px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      max-width: 650px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
 
     h1 {
@@ -32,34 +32,56 @@
     }
 
     .section {
-      background: #2b2b36;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 15px;
+      background: #262632;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
     }
 
     .row {
       display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 12px;
       align-items: center;
+      margin-bottom: 10px;
     }
 
     label {
-      font-size: 13px;
+      font-size: 12px;
       color: #aaa;
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      font-weight: 600;
     }
 
-    input[type="text"] {
+    input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 8px 12px;
-      background: #121214;
-      border: 1px solid #444;
+      padding: 10px;
+      background: #111115;
+      border: 1px solid #3d3d4e;
       color: #fff;
       border-radius: 6px;
       font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: none;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 2px solid #fff;
+      border-radius: 50%;
     }
 
     .btn {
@@ -70,35 +92,44 @@
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
-      transition: background 0.2s;
+      width: 100%;
     }
 
     .btn:hover { background: #00c8d4; }
-    .btn-danger { background: #ff4757; color: #fff; }
-    .btn-danger:hover { background: #ff6b81; }
+    .btn-danger { background: #ff3b3b; color: #fff; }
+    .btn-danger:hover { background: #d63030; }
+
+    .btn-goal {
+      background: #ff0055;
+      color: #fff;
+      margin-top: 8px;
+    }
+
+    .btn-goal:hover {
+      background: #d40045;
+    }
 
     .score-controls {
       display: flex;
-      gap: 10px;
-      margin-top: 5px;
+      gap: 8px;
     }
 
     .score-btn {
       flex: 1;
-      padding: 12px;
+      padding: 10px;
       font-size: 18px;
       font-weight: bold;
-      background: #3a3a4c;
+      background: #363648;
       color: #fff;
       border: none;
       border-radius: 6px;
       cursor: pointer;
     }
 
-    .score-btn:hover { background: #4e4e66; }
+    .score-btn:hover { background: #484860; }
 
     .timer-display {
-      font-size: 32px;
+      font-size: 36px;
       font-family: monospace;
       text-align: center;
       margin: 10px 0;
@@ -109,28 +140,31 @@
 <body>
 
   <div class="panel">
-    <h1>Régie - Scoreboard Broadcast</h1>
+    <h1>Contrôle Overlay OBS</h1>
 
-    <!-- Visibility -->
     <div class="section">
-      <button class="btn" id="toggleVisibilityBtn" style="width: 100%;">Masquer / Afficher l'afficheur</button>
+      <button class="btn" id="toggleVisibilityBtn">Afficher / Masquer L'afficheur</button>
     </div>
 
-    <!-- Équipes -->
     <div class="section">
       <div class="row">
         <div style="flex: 1;">
           <label>Équipe 1</label>
-          <input type="text" id="team1Input" value="TEAM 1">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="color" id="color1Input" value="#0055ff">
+            <input type="text" id="team1Input" value="TEAM 1">
+          </div>
         </div>
         <div style="flex: 1;">
           <label>Équipe 2</label>
-          <input type="text" id="team2Input" value="TEAM 2">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="color" id="color2Input" value="#ff0000">
+            <input type="text" id="team2Input" value="TEAM 2">
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Scores -->
     <div class="section">
       <div class="row">
         <div style="flex: 1; text-align: center;">
@@ -139,25 +173,35 @@
             <button class="score-btn" onclick="changeScore(1, -1)">-</button>
             <button class="score-btn" onclick="changeScore(1, 1)">+</button>
           </div>
+          <button class="btn btn-goal" onclick="triggerGoal(1)">Animation BUT !</button>
         </div>
+
         <div style="flex: 1; text-align: center;">
           <label>Score Équipe 2</label>
           <div class="score-controls">
             <button class="score-btn" onclick="changeScore(2, -1)">-</button>
             <button class="score-btn" onclick="changeScore(2, 1)">+</button>
           </div>
+          <button class="btn btn-goal" onclick="triggerGoal(2)">Animation BUT !</button>
         </div>
       </div>
     </div>
 
-    <!-- Chronomètre -->
     <div class="section">
-      <label style="text-align: center;">Chronomètre</label>
+      <label style="text-align: center;">Chronomètre & Temps Additionnel</label>
       <div class="timer-display" id="adminTimer">00:00</div>
+      
+      <div class="row" style="margin-bottom: 15px;">
+        <div style="flex: 1;">
+          <label>Temps additionnel (min)</label>
+          <input type="number" id="extraTimeInput" value="0" min="0" max="15">
+        </div>
+      </div>
+
       <div class="row">
-        <button class="btn" style="flex: 1;" onclick="startTimer()">Démarrer</button>
-        <button class="btn" style="flex: 1;" onclick="pauseTimer()">Pause</button>
-        <button class="btn btn-danger" style="flex: 1;" onclick="resetTimer()">Reset</button>
+        <button class="btn" onclick="startTimer()">Démarrer</button>
+        <button class="btn" onclick="pauseTimer()">Pause</button>
+        <button class="btn btn-danger" onclick="resetTimer()">Reset</button>
       </div>
     </div>
   </div>
@@ -169,14 +213,17 @@
       visible: true,
       team1Name: 'TEAM 1',
       team2Name: 'TEAM 2',
+      color1: '#0055ff',
+      color2: '#ff0000',
       score1: 0,
       score2: 0,
-      timerSeconds: 0
+      timerSeconds: 0,
+      extraTime: '0'
     };
 
     let timerInterval = null;
 
-    function sendState() {
+    function sendUpdate() {
       const minutes = String(Math.floor(state.timerSeconds / 60)).padStart(2, '0');
       const seconds = String(state.timerSeconds % 60).padStart(2, '0');
       const timeStr = `${minutes}:${seconds}`;
@@ -184,35 +231,60 @@
       document.getElementById('adminTimer').innerText = timeStr;
 
       channel.postMessage({
-        type: 'UPDATE_ALL',
+        type: 'UPDATE',
         ...state,
         timer: timeStr
       });
     }
 
-    // Gestion du score
     function changeScore(team, delta) {
       if (team === 1) state.score1 = Math.max(0, state.score1 + delta);
       if (team === 2) state.score2 = Math.max(0, state.score2 + delta);
-      sendState();
+      sendUpdate();
     }
 
-    // Noms des équipes
+    function triggerGoal(team) {
+      if (team === 1) {
+        state.score1++;
+        sendUpdate();
+        channel.postMessage({ type: 'GOAL_EVENT', teamName: state.team1Name });
+      } else {
+        state.score2++;
+        sendUpdate();
+        channel.postMessage({ type: 'GOAL_EVENT', teamName: state.team2Name });
+      }
+    }
+
     document.getElementById('team1Input').addEventListener('input', (e) => {
       state.team1Name = e.target.value;
-      sendState();
-    });
-    document.getElementById('team2Input').addEventListener('input', (e) => {
-      state.team2Name = e.target.value;
-      sendState();
+      sendUpdate();
     });
 
-    // Chrono Controls
+    document.getElementById('team2Input').addEventListener('input', (e) => {
+      state.team2Name = e.target.value;
+      sendUpdate();
+    });
+
+    document.getElementById('color1Input').addEventListener('input', (e) => {
+      state.color1 = e.target.value;
+      sendUpdate();
+    });
+
+    document.getElementById('color2Input').addEventListener('input', (e) => {
+      state.color2 = e.target.value;
+      sendUpdate();
+    });
+
+    document.getElementById('extraTimeInput').addEventListener('input', (e) => {
+      state.extraTime = e.target.value;
+      sendUpdate();
+    });
+
     function startTimer() {
       if (timerInterval) return;
       timerInterval = setInterval(() => {
         state.timerSeconds++;
-        sendState();
+        sendUpdate();
       }, 1000);
     }
 
@@ -224,17 +296,15 @@
     function resetTimer() {
       pauseTimer();
       state.timerSeconds = 0;
-      sendState();
+      sendUpdate();
     }
 
-    // Toggle Affichage
     document.getElementById('toggleVisibilityBtn').addEventListener('click', () => {
       state.visible = !state.visible;
-      sendState();
+      sendUpdate();
     });
 
-    // Envoi initial
-    sendState();
+    sendUpdate();
   </script>
 </body>
 </html>
