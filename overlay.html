@@ -20,6 +20,7 @@
       height: 100vh;
     }
 
+    /* Conteneur principal */
     .scoreboard-container {
       position: absolute;
       top: 40px;
@@ -29,30 +30,31 @@
       gap: 12px;
     }
 
-    /* Animation d'ouverture : logo puis déploiement */
+    /* LOGO CENTRAL : Fond transparent et animation au chargement */
     .center-logo {
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 10;
       transform: scale(0);
-      animation: popLogo 0.4s ease forwards;
+      animation: popLogo 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
 
     .center-logo img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
+      background: transparent;
     }
 
     @keyframes popLogo {
-      0% { transform: scale(0); }
-      80% { transform: scale(1.2); }
-      100% { transform: scale(1); }
+      0% { transform: scale(0) rotate(-10deg); }
+      100% { transform: scale(1) rotate(0deg); }
     }
 
+    /* TIMER : Déploiement vers la gauche */
     .timer-wrapper {
       display: flex;
       align-items: center;
@@ -62,9 +64,10 @@
       gap: 8px;
       transform: scaleX(0);
       transform-origin: right center;
-      animation: deployBar 0.5s 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation: deployLeft 0.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
+    /* BARRE PRINCIPALE : Déploiement vers la droite */
     .main-bar {
       display: flex;
       align-items: center;
@@ -75,10 +78,14 @@
       overflow: hidden;
       transform: scaleX(0);
       transform-origin: left center;
-      animation: deployBar 0.5s 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation: deployRight 0.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    @keyframes deployBar {
+    @keyframes deployLeft {
+      to { transform: scaleX(1); }
+    }
+
+    @keyframes deployRight {
       to { transform: scaleX(1); }
     }
 
@@ -89,6 +96,7 @@
       letter-spacing: 1px;
     }
 
+    /* TEMPS ADDITIONNEL */
     .extra-time {
       background: #ff2a2a;
       color: #ffffff;
@@ -97,10 +105,16 @@
       padding: 2px 8px;
       border-radius: 8px;
       display: none;
+      animation: pulseExtra 1.2s infinite ease-in-out;
     }
 
     .extra-time.visible {
       display: inline-block;
+    }
+
+    @keyframes pulseExtra {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.05); }
     }
 
     .team {
@@ -120,6 +134,7 @@
       height: 28px;
       border-radius: 50%;
       background-color: #ff0000;
+      transition: background-color 0.3s ease;
     }
 
     .center-score-zone {
@@ -138,28 +153,55 @@
       font-weight: 700;
       padding: 0 14px;
       line-height: 1;
+      display: inline-block;
+      transition: transform 0.2s ease;
     }
 
-    /* Animation du BUT façon banderole */
+    .score-updated {
+      animation: popScore 0.4s ease;
+    }
+
+    @keyframes popScore {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.5); }
+      100% { transform: scale(1); }
+    }
+
+    /* BANNIÈRE ROUGE DU BUT (Bandeau glissant) */
     .goal-banner {
-      display: none;
+      position: absolute;
+      inset: 0;
       background: #ff0000;
       color: #ffffff;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 900;
-      letter-spacing: 8px;
-      padding: 6px 30px;
-      border-radius: 16px;
+      letter-spacing: 6px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 20px;
       text-transform: uppercase;
+      transform: translateX(-100%);
+      pointer-events: none;
+      z-index: 20;
     }
 
-    .main-bar.is-goal .team,
-    .main-bar.is-goal .center-score-zone {
-      display: none;
+    .main-bar.goal-in .goal-banner {
+      animation: slideInGoal 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
-    .main-bar.is-goal .goal-banner {
-      display: block;
+    .main-bar.goal-out .goal-banner {
+      animation: slideOutGoal 0.5s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+    }
+
+    @keyframes slideInGoal {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0%); }
+    }
+
+    @keyframes slideOutGoal {
+      from { transform: translateX(0%); }
+      to { transform: translateX(100%); }
     }
   </style>
 </head>
@@ -181,7 +223,7 @@
         <div class="score" id="scoreTeam1">0</div>
         
         <div class="center-logo">
-          <img src="https://www.noelshack.com/2026-31-3-1785359559-1000007827-removebg-preview.png" alt="Logo">
+          <img src="https://image.noelshack.com/fichiers/2026/31/3/1785359559-1000007827-removebg-preview.png" alt="Logo">
         </div>
 
         <div class="score" id="scoreTeam2">0</div>
@@ -200,6 +242,15 @@
     const channel = new BroadcastChannel('obs_scoreboard_channel');
     let goalTimeout = null;
 
+    function updateScoreWithAnimation(element, newValue) {
+      if (element.innerText !== String(newValue)) {
+        element.innerText = newValue;
+        element.classList.remove('score-updated');
+        void element.offsetWidth;
+        element.classList.add('score-updated');
+      }
+    }
+
     channel.onmessage = (event) => {
       const data = event.data;
 
@@ -207,8 +258,9 @@
         document.getElementById('timerDisplay').innerText = data.timer;
         document.getElementById('nameTeam1').innerText = data.team1Name;
         document.getElementById('nameTeam2').innerText = data.team2Name;
-        document.getElementById('scoreTeam1').innerText = data.score1;
-        document.getElementById('scoreTeam2').innerText = data.score2;
+        
+        updateScoreWithAnimation(document.getElementById('scoreTeam1'), data.score1);
+        updateScoreWithAnimation(document.getElementById('scoreTeam2'), data.score2);
 
         document.getElementById('circleTeam1').style.backgroundColor = data.color1;
         document.getElementById('circleTeam2').style.backgroundColor = data.color2;
@@ -227,20 +279,20 @@
 
       if (data.type === 'GOAL_EVENT') {
         const bar = document.getElementById('mainBar');
-        const goalBanner = document.getElementById('goalBanner');
 
-        if (data.customText) {
-          goalBanner.innerText = data.customText;
-        } else {
-          goalBanner.innerText = 'BUUUUUUT';
-        }
-
-        bar.classList.add('is-goal');
+        bar.classList.remove('goal-out');
+        bar.classList.add('goal-in');
 
         if (goalTimeout) clearTimeout(goalTimeout);
+
         goalTimeout = setTimeout(() => {
-          bar.classList.remove('is-goal');
-        }, 4000);
+          bar.classList.remove('goal-in');
+          bar.classList.add('goal-out');
+
+          setTimeout(() => {
+            bar.classList.remove('goal-out');
+          }, 500);
+        }, 3500);
       }
     };
   </script>
