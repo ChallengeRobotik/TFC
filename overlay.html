@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>OBS Overlay - FIFA Style</title>
+  <title>OBS Overlay</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Teko:wght@700&display=swap" rel="stylesheet">
   <style>
     * {
@@ -16,56 +16,78 @@
       overflow: hidden;
       font-family: 'Orbitron', sans-serif;
       user-select: none;
+      width: 100vw;
+      height: 100vh;
     }
 
-    /* Conteneur Global Scoreboard */
     .scoreboard-container {
       position: absolute;
-      top: 30px;
+      top: 40px;
       left: 50px;
       display: flex;
       align-items: center;
       gap: 12px;
       perspective: 1000px;
       opacity: 0;
-      transform: translateY(-50px) rotateX(15deg);
-      transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform: translateY(-50px);
+      transition: all 0.5s ease;
     }
 
     .scoreboard-container.visible {
       opacity: 1;
-      transform: translateY(0) rotateX(0deg);
+      transform: translateY(0);
     }
 
-    /* Bloc Chronomètre */
-    .timer-box {
+    .timer-wrapper {
+      display: flex;
+      align-items: center;
       background: #ffffff;
-      color: #000000;
-      padding: 8px 24px;
       border-radius: 18px;
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.8);
-      position: relative;
-      overflow: hidden;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 6px 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      gap: 8px;
     }
 
-    /* Dynamic Scoreboard Main Bar */
+    .timer-box {
+      color: #000000;
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .extra-time {
+      background: #ff2a2a;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 8px;
+      display: none;
+      animation: pulse 1.5s infinite;
+    }
+
+    .extra-time.visible {
+      display: inline-block;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
     .main-bar {
       display: flex;
       align-items: center;
       background: #000000;
       border-radius: 20px;
-      padding: 4px 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 15px rgba(0, 242, 254, 0.2);
+      padding: 4px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
       border: 1px solid rgba(255, 255, 255, 0.15);
       position: relative;
       overflow: hidden;
     }
 
-    /* Effet Glare/Shine style EA Sports */
     .main-bar::after {
       content: '';
       position: absolute;
@@ -73,12 +95,7 @@
       left: -60%;
       width: 40%;
       height: 200%;
-      background: linear-gradient(
-        60deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.25), 
-        transparent
-      );
+      background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.2), transparent);
       transform: rotate(25deg);
       animation: shine 4s infinite;
     }
@@ -89,64 +106,49 @@
       100% { left: 140%; }
     }
 
-    /* Segments Équipes */
     .team {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 0 15px;
+      padding: 0 12px;
       color: #ffffff;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 1px;
     }
 
-    .team-badge {
-      width: 32px;
-      height: 32px;
-      background-color: #cccccc;
+    .team-color-circle {
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       border: 2px solid #ffffff;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+      background-color: #ff0000;
+      transition: background-color 0.3s ease;
     }
 
-    /* Zone Centrale des Scores & Logo */
     .center-score-zone {
       display: flex;
       align-items: center;
       background: linear-gradient(135deg, #00d2ff 0%, #00f2fe 100%);
       border-radius: 16px;
-      padding: 0 8px;
-      margin: 0 5px;
+      padding: 0 6px;
+      margin: 0 6px;
       color: #000;
-      box-shadow: inset 0 0 10px rgba(255,255,255,0.6);
     }
 
     .score {
       font-family: 'Teko', sans-serif;
-      font-size: 48px;
+      font-size: 46px;
       font-weight: 700;
-      padding: 0 16px;
+      padding: 0 14px;
       line-height: 1;
-      transition: transform 0.2s ease;
     }
 
-    /* Animation quand un but est marqué */
-    .score-bump {
-      animation: bump 0.4s ease-out;
-    }
-
-    @keyframes bump {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.6); color: #fff; text-shadow: 0 0 10px #00f2fe; }
-      100% { transform: scale(1); }
-    }
-
-    /* Logo Evénement Central */
     .center-logo {
-      width: 50px;
-      height: 50px;
+      width: 46px;
+      height: 46px;
       background: #ffffff;
       border-radius: 12px;
       border: 2px solid #000;
@@ -154,34 +156,85 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 900;
       line-height: 1;
       text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       z-index: 2;
     }
 
     .logo-txt-top { color: #0000ff; }
-    .logo-txt-mid { color: #000000; font-size: 14px; }
+    .logo-txt-mid { color: #000000; font-size: 13px; }
     .logo-txt-bot { color: #ff0000; }
+
+    .goal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.2);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .goal-overlay.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .goal-banner {
+      background: linear-gradient(90deg, transparent, #00f2fe, #ff0055, transparent);
+      width: 100%;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 0 50px rgba(0, 242, 254, 0.8);
+      transform: skewY(-3deg);
+    }
+
+    .goal-title {
+      font-size: 110px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 20px #000, 0 0 40px #00f2fe;
+      letter-spacing: 12px;
+      animation: goalGlitch 0.6s infinite alternate;
+    }
+
+    .goal-team {
+      font-size: 45px;
+      font-weight: 900;
+      color: #ffff00;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+      margin-top: 10px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+    }
+
+    @keyframes goalGlitch {
+      0% { transform: scale(1); filter: drop-shadow(0 0 10px #00f2fe); }
+      100% { transform: scale(1.05); filter: drop-shadow(0 0 30px #ff0055); }
+    }
   </style>
 </head>
 <body>
 
   <div class="scoreboard-container visible" id="scoreboard">
-    <!-- Chrono -->
-    <div class="timer-box" id="timerDisplay">00:00</div>
+    <div class="timer-wrapper">
+      <div class="timer-box" id="timerDisplay">00:00</div>
+      <div class="extra-time" id="extraTimeDisplay">+0'</div>
+    </div>
 
-    <!-- Main Bar -->
     <div class="main-bar">
-      <!-- Équipe 1 -->
       <div class="team">
-        <div class="team-badge" id="badgeTeam1"></div>
+        <div class="team-color-circle" id="circleTeam1"></div>
         <span id="nameTeam1">TEAM 1</span>
       </div>
 
-      <!-- Centre Score & Logo -->
       <div class="center-score-zone">
         <div class="score" id="scoreTeam1">0</div>
         
@@ -194,40 +247,45 @@
         <div class="score" id="scoreTeam2">0</div>
       </div>
 
-      <!-- Équipe 2 -->
       <div class="team">
         <span id="nameTeam2">TEAM 2</span>
-        <div class="team-badge" id="badgeTeam2"></div>
+        <div class="team-color-circle" id="circleTeam2"></div>
       </div>
     </div>
   </div>
 
+  <div class="goal-overlay" id="goalOverlay">
+    <div class="goal-banner">
+      <div class="goal-title">BUT !</div>
+      <div class="goal-team" id="goalTeamName">TEAM 1</div>
+    </div>
+  </div>
+
   <script>
-    // Ecoute des commandes de la régie
     const channel = new BroadcastChannel('obs_scoreboard_channel');
 
-    const score1El = document.getElementById('scoreTeam1');
-    const score2El = document.getElementById('scoreTeam2');
-
-    function animateScore(element, newValue) {
-      if (element.innerText !== String(newValue)) {
-        element.innerText = newValue;
-        element.classList.remove('score-bump');
-        void element.offsetWidth; // Force Reflow
-        element.classList.add('score-bump');
-      }
-    }
+    let goalTimeout = null;
 
     channel.onmessage = (event) => {
       const data = event.data;
 
-      if (data.type === 'UPDATE_ALL') {
+      if (data.type === 'UPDATE') {
         document.getElementById('timerDisplay').innerText = data.timer;
         document.getElementById('nameTeam1').innerText = data.team1Name;
         document.getElementById('nameTeam2').innerText = data.team2Name;
-        
-        animateScore(score1El, data.score1);
-        animateScore(score2El, data.score2);
+        document.getElementById('scoreTeam1').innerText = data.score1;
+        document.getElementById('scoreTeam2').innerText = data.score2;
+
+        document.getElementById('circleTeam1').style.backgroundColor = data.color1;
+        document.getElementById('circleTeam2').style.backgroundColor = data.color2;
+
+        const extraEl = document.getElementById('extraTimeDisplay');
+        if (data.extraTime && data.extraTime !== '0' && data.extraTime !== '') {
+          extraEl.innerText = `+${data.extraTime}'`;
+          extraEl.classList.add('visible');
+        } else {
+          extraEl.classList.remove('visible');
+        }
 
         const board = document.getElementById('scoreboard');
         if (data.visible) {
@@ -235,6 +293,19 @@
         } else {
           board.classList.remove('visible');
         }
+      }
+
+      if (data.type === 'GOAL_EVENT') {
+        const overlay = document.getElementById('goalOverlay');
+        const teamText = document.getElementById('goalTeamName');
+
+        teamText.innerText = data.teamName;
+        overlay.classList.add('active');
+
+        if (goalTimeout) clearTimeout(goalTimeout);
+        goalTimeout = setTimeout(() => {
+          overlay.classList.remove('active');
+        }, 4000);
       }
     };
   </script>
